@@ -28,8 +28,6 @@ const booksSchema = new mongoose.Schema(
       required: true,
       trim: true,
       unique: true,
-      // minlength: 13,
-      // maxlength: 13,
     },
 
     category: {
@@ -39,7 +37,7 @@ const booksSchema = new mongoose.Schema(
     },
 
     subcategory: {
-      type: [String],   
+      type: [String],
       required: true,
       trim: true,
     },
@@ -58,13 +56,12 @@ const booksSchema = new mongoose.Schema(
 
     deletedAt: {
       type: Date,
-      default: null,   
+      default: null,
     },
 
     releasedAt: {
       type: Date,
       required: true,
-      // match: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/,
     },
   },
   { timestamps: true }

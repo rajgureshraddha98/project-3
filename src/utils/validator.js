@@ -25,17 +25,9 @@ const isValidRequestBody = function (value) {
 const isValidISBN = function (value) {
   return /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/.test(value);
 };
-// const isValidISBN = function (value) {
-//   return /^\d{13}$/.test(value);
-// };
 
 const isValidRating = function (value) {
-  // return (value) => 1 && value <= 5;
   return /^[1-5]$/.test(value);
-};
-
-const isNumber = function (value) {
-  return isNan(value);
 };
 
 const isValidReview = function (value) {
@@ -56,7 +48,6 @@ module.exports = {
   isValidTitle,
   isValidRequestBody,
   isValidRating,
-  isNumber,
   isValidReview,
   isValidDate,
 };

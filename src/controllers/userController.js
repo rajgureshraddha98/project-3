@@ -1,8 +1,7 @@
-const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
+const emailValidator = require("validator");
 const userModel = require("../models/userModel");
 const validator = require("../utils/validator");
-const emailValidator = require("validator");
 
 /*--------------------------------------------------------------------------------*/
 //                            1. API - CREATE A USER.
@@ -12,7 +11,7 @@ const createUser = async (req, res) => {
   try {
     const requestBody = req.body;
 
-    // Error: No Data in Request-Body.
+    // Error: If No Data in Request-Body.
     if (Object.keys(requestBody).length === 0) {
       return res.status(400).json({
         status: false,
@@ -22,39 +21,25 @@ const createUser = async (req, res) => {
 
     const { title, name, phone, email, password, address } = requestBody;
 
-    //ADDRESS Validation.
-    // console.log(address);
-    // console.log(!!address);
-    // console.log(typeof address);
-    // if (typeof address === "string" && address.trim().length === 0) {
-    if (typeof address === "string") {
+    //ADDRESS Validation(Correct Format(OBJECT) - if Present ).
+    if (typeof address === "string" || address === null || address === false) {
       return res.status(400).json({
         status: false,
-        message: "Fill the ADDRESS in correct Format (as an <Object>).",
+        message: "Fill the ADDRESS in correct Format (as an <OBJECT>).",
       });
     }
     if (address) {
-      // if (typeof address !== "object") {
-      //   console.log("INSIDE OBJECT.");
-      //   return res.status(400).json({
-      //     status: false,
-      //     message: "Fill the ADDRESS in correct Format.",
-      //   });
-      // }
-      // console.log("INSIDE 1st Address.");
       if (Object.keys(address).length === 0) {
         return res.status(400).json({
           status: false,
-          message: "Invalid ADDRESS. Please fill ADDRESS in the body.",
+          message:
+            "Invalid ADDRESS. Please enter <STREET> ,<CITY> & <PINCODE> of ADDRESS(<OBJECT>).",
         });
       }
     }
 
-    // const { street, city, pincode } = address;
-
     //TITLE Validation.
     if (!validator.isValidString(title)) {
-      // console.log("Title correct");
       return res
         .status(400)
         .send({ status: false, message: "Please enter a Valid TITLE ." });
@@ -68,7 +53,6 @@ const createUser = async (req, res) => {
 
     //NAME Validation.
     if (!validator.isValidString(name)) {
-      // console.log("Title correct");
       return res
         .status(400)
         .send({ status: false, message: "Please enter Valid NAME." });
@@ -132,9 +116,7 @@ const createUser = async (req, res) => {
       });
     }
 
-    //ADDRESS Validation (NOT Mandatory).
-    // let street, city, pincode ;
-
+    //ADDRESS 'FIELDS' Validation (NOT Mandatory (if Present)).
     if (address) {
       const { street, city, pincode } = address;
       if (!validator.isValidString(street)) {
@@ -142,11 +124,11 @@ const createUser = async (req, res) => {
           .status(400)
           .send({ status: false, message: "Please enter a Valid STREET." });
       }
-      if (!/^[a-zA-Z0-9\/\- ]*$/.test(street)) {
+      if (!/^[a-zA-Z0-9\/\-\, ]*$/.test(street)) {
         return res.status(400).send({
           status: false,
           message:
-            "STREET can be Alphabets, Hyphen(-), Forward-slash(/), Numbers & White-space(s) ONLY.",
+            "STREET can be Alphabets, Hyphen(-), Forward-slash(/), Comma(,), Numbers & White-space(s) ONLY.",
         });
       }
       if (!validator.isValidString(city)) {
@@ -193,7 +175,7 @@ const userLogin = async (req, res) => {
   try {
     const requestBody = req.body;
 
-    // Error: No Data in Request-Body.
+    // Error: If No Data in Request-Body.
     if (Object.keys(requestBody).length === 0) {
       return res.status(400).json({
         status: false,
@@ -202,7 +184,7 @@ const userLogin = async (req, res) => {
     }
     const { email, password } = requestBody;
 
-    // Error: Unnecessary Data in Request-Body.
+    // Error: If Unnecessary Data(More than 2 'keys') in Request-Body.
     if (Object.keys(requestBody).length > 2) {
       return res.status(400).json({
         status: false,
@@ -223,6 +205,7 @@ const userLogin = async (req, res) => {
         .send({ status: false, message: "Please enter a Valid PASSWORD." });
     }
 
+    //Find User with matching credentials.
     const userMatch = await userModel.findOne({
       email: email,
       password: password,
@@ -234,21 +217,17 @@ const userLogin = async (req, res) => {
       });
     }
 
-    // const token = jwt.sign({
-    //   email: userMatch.email,
-    //   iat: Math.floor( Date.now() / 1000 ),
-    //   exp: Math.floor( Date.now() / 1000 ) + 3*60*60,   //Expire in 3 Hours.
-    // }, "thisIsTheSecretKeyForToken(@#$%^&*)" );
-
+    //Generate Token.
     const token = jwt.sign(
       {
         userId: userMatch._id,
         iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60, //Expire in 12 Hours.
+        exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60, //Expire in '12' Hours.
       },
       "thisIsTheSecretKeyForToken(@#$%^&*)"
     );
 
+    //Send Generated token in response.
     return res.status(200).send({
       status: true,
       message: "Token Generated Successfully.",

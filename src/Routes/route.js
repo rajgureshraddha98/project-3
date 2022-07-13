@@ -47,4 +47,12 @@ router.delete(
   reviewsController.deleteReviewById
 );
 
+// If Invalid API requested.
+router.all("/**", function (req, res) {
+  res.status(400).send({
+    status: false,
+    message: "INVALID END-POINT: The API You requested is NOT available.",
+  });
+});
+
 module.exports = router;
